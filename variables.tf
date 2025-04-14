@@ -84,12 +84,6 @@ variable "routetableassoc" {
        subnet_id                            = optional(string)           
     }))
 }
-variable "routetableassoc" {
-    type = list(object({
-     vpc_id                     = optional(string)         
-    }))
-}
-
 variable "igw" {
    type = list(object({
      vpc_id                     = optional(string)         
