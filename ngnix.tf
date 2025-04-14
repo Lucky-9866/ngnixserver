@@ -19,7 +19,7 @@ module "custom-vpc" {
 module "subnet" {
   source                          = "./aws-subnet"
   for_each                        = { for eachNetwork in var.subnet : index(var.subnet, eachNetwork) => eachNetwork }
-  vpc_id                          = each.value.vpc_id
+  vpc_id                          = module.vpc.aws_vpc_main.id
   cidr_block                      = each.value.cidr_block
   availability_zone               = each.value.availability_zone
   map_public_ip_on_launch         = each.value.map_public_ip_on_launch
@@ -33,7 +33,7 @@ module "subnet" {
 
 module "security-groups" {
   source      = "./aws-security"
-  depends_on = [ module.custom-vpc ]
+  depends_on  = [ module.custom-vpc ]
   vpc_id      = module.custom-vpc[0].vpc_id
   for_each    = { for eachRule in var.sgrules : eachRule.name => eachRule }
   sgname      = each.value.name
@@ -45,7 +45,7 @@ module "security-groups" {
 module "route-table" {
   source                     = "./aws-routetable"
   for_each                   = { for eachNetwork in var.route_table : eachNetwork.cidr_block => eachNetwork }
-  vpc_id                     = each.value.vpc_id
+  vpc_id                     = module.vpc.aws_vpc_main.id
   carrier_gateway_id         = each.value.carrier_gateway_id
   cidr_block                 = each.value.cidr_block
   core_network_arn           = each.value.core_network_arn
@@ -63,9 +63,72 @@ module "route-table" {
 
 
 }
-module"rtassociation"{
-source = "./aws-routetableassoc"
- for_each  = { for eachNetwork in var.subnet : index(var.subnet, eachNetwork) => eachNetwork }
-       route_table_id                       = each.value.route_table_id
-       subnet_id                            = each.value.subnet_id
+module "routetableassoc" {
+  source         = "./aws-routetableassoc"
+  subnet_id      = module.subnet.aws_subnet_main.id
+  route_table_id = module.rt.aws_route_table_main.id
+}
+module "igw" {
+       source       = "./aws-igw"
+       vpc_id       = module.custom-vpc[0].vpc_id
+}
+module "instance" {
+       source = "../aws-instance"
+       for_each                             = { for eachNetwork in var.instance : eachNetwork.subnet => eachNetwork }
+       host_id                              = each.value.host_id
+       subnet_id                            = each.key
+       ami                                  = each.value.ami
+       instance_type                        = each.value.instance_type
+       security_groups                      = each.value.security_groups
+       arn                                  = each.value.arn
+       associate_public_ip_address          = each.value.associate_public_ip_address
+       availability_zone                    = each.value.availability_zone 
+       disable_api_stop                     = each.value.disable_api_stop
+       disable_api_termination              = each.value.disable_api_termination
+       ebs_optimized                        = each.value.ebs_optimized
+       enable_primary_ipv6                  = each.value.enable_primary_ipv6
+       get_password_data                    = each.value.get_password_data
+       host_resource_group_arn              = each.value.host_resource_group_arn
+       iam_instance_profile                 = each.value.iam_instance_profile
+       id                                   = each.value.id
+       instance_initiated_shutdown_behavior = each.value.instance_initiated_shutdown_behavior
+       instance_lifecycle                   = each.value.instance_lifecycle
+       instance_state                       = each.value.instance_state
+       ipv6_address_count                   = each.value.ipv6_address_count
+       ipv6_addresses                       = each.value.ipv6_addresses
+       key_name                             = each.value.key_name
+       monitoring                           = each.value.monitoring
+       outpost_arn                          = each.value.outpost_arn
+       password_data                        = each.value.password_data
+       placement_group                      = each.value.placement_group
+       placement_partition_number           = each.value.placement_partition_number
+       primary_network_interface_id         = each.value.primary_network_interface_id
+       private_dns                          = each.value.private_dns
+       private_ip                           = each.value.private_ip
+       public_dns                           = each.value.public_dns
+       public_ip                            = each.value.public_ip
+       secondary_private_ips                = each.value.secondary_private_ips
+       source_dest_check                    = each.value.source_dest_check
+       spot_instance_request_id             = each.value.spot_instance_request_id
+       tags_all                             = each.value.tags_all
+       tenancy                              = each.value.tenancy
+       user_data                            = each.value.user_data
+       user_data_base64                     = each.value.user_data_base64
+       user_data_replace_on_change          = each.value.user_data_replace_on_change
+       vpc_security_group_ids               = each.value.vpc_security_group_ids 
+       hibernation                          = each.value.hibernation
+       volume_tags                          = each.value.volume_tags  
+}
+module "nat" {
+    source = "../aws-igw"
+    for_each                              = { for eachNetwork in var.nat : eachNetwork.allocation=> eachNetwork }
+    allocation_id                         = each.key
+    connectivity_type                     = each.value.connectivity_type  
+    private_ip                            = each.value.private_ip
+    subnet_id                             = veach.value.subnet_id
+    secondary_allocation_ids              = each.value.secondary_allocation_ids
+    secondary_private_ip_address_count    = each.value.secondary_private_ip_address_count
+    secondary_private_ip_addresses        = each.value.secondary_private_ip_addresses 
+    tags                                  = each.value.tags
+  
 }
