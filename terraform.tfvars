@@ -36,3 +36,14 @@ sgrules = [{
     }
   ]
 }]
+
+route_table = [{
+  cidr_block = ["0.0.0.0/0"]
+  vpc_id     = "vpc-xxxxxxxx"
+  tags       = { "Name" : "route_table" }
+}]
+
+routetableassoc = [{
+  route_table_id  = "rtb-0ebc0a35016475ecd"
+  subnet_id       = "subnet-0caafad8c1d8c5063"
+}]

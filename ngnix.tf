@@ -44,7 +44,7 @@ module "security-groups" {
 }
 module "route-table" {
   source                     = "./aws-routetable"
-  for_each                   = { for eachNetwork in var.route_table : eachNetwork.cidr_block[0] => eachNetwork }
+  for_each                   = { for eachNetwork in var.route_table : eachNetwork.cidr_block => eachNetwork }
   vpc_id                     = each.value.vpc_id
   carrier_gateway_id         = each.value.carrier_gateway_id
   cidr_block                 = each.value.cidr_block
@@ -62,4 +62,10 @@ module "route-table" {
   tags                       = each.value.tags
 
 
+}
+module"rtassociation"{
+source = "./aws-routetableassoc"
+ for_each  = { for eachNetwork in var.subnet : index(var.subnet, eachNetwork) => eachNetwork }
+       route_table_id                       = each.value.route_table_id
+       subnet_id                            = each.value.subnet_id
 }
