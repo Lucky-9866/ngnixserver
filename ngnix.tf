@@ -19,7 +19,7 @@ module "custom-vpc" {
 module "subnet" {
   source                          = "./aws-subnet"
   for_each                        = { for eachNetwork in var.subnet : index(var.subnet, eachNetwork) => eachNetwork }
-  vpc_id                          = each.value.vpc_id
+  vpc_id                          = aws_vpc.main.id
   cidr_block                      = each.value.cidr_block
   availability_zone               = each.value.availability_zone
   map_public_ip_on_launch         = each.value.map_public_ip_on_launch

@@ -2,7 +2,6 @@
 variable "cidr_block" {
   type        = string
   description = "The CIDR block for AWS Network"
-  default     = ""
 }
 
 variable "ipv4_ipam_pool_id" {
@@ -52,7 +51,7 @@ variable "ipv6_cidr_block" {
 }
 
 variable "tags" {
-    
+
   type        = map(string)
   description = "Tags for the Network"
   
