@@ -32,3 +32,26 @@ variable "subnet" {
     tags                            = map(string)
   }))
 }
+
+variable "sgrules" {
+  type = list(object({
+    name                   = optional(string)
+    description            = optional(string)
+    name_prefix            = optional(string)
+    revoke_rules_on_delete = optional(string)
+    vpc_id                 = optional(string)
+    tags                   = optional(map(string))
+    egress = optional(list(object({
+      from_port   = number
+      to_port     = number
+      protocol    = string
+      cidr_blocks = optional(list(string))
+    })))
+    ingress = optional(list(object({
+      from_port   = number
+      to_port     = number
+      protocol    = string
+      cidr_blocks = optional(list(string))
+    })))
+  }))
+}
